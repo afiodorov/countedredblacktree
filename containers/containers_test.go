@@ -7,7 +7,7 @@
 package containers
 
 import (
-	"github.com/emirpasic/gods/utils"
+	"github.com/afiodorov/countedredblacktree/utils"
 	"testing"
 )
 

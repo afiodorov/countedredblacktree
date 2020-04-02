@@ -6,8 +6,8 @@ package redblacktree
 
 import (
 	"encoding/json"
-	"github.com/emirpasic/gods/containers"
-	"github.com/emirpasic/gods/utils"
+	"github.com/afiodorov/countedredblacktree/containers"
+	"github.com/afiodorov/countedredblacktree/utils"
 )
 
 func assertSerializationImplementation() {

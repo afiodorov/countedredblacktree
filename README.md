@@ -1,6 +1,6 @@
 # Red Black Tree With Counts
 
-This is a copy of [gods](https://github.com/emirpasic/gods) that modifies the Red Black Tree so that each node:
+This is a copy of [gods](https://github.com/afiodorov/countedredblacktree) that modifies the Red Black Tree so that each node:
 
 * Keeps counts of children
 * Is no longer associated with a value
