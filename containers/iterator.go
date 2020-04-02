@@ -12,10 +12,6 @@ type IteratorWithIndex interface {
 	// Modifies the state of the iterator.
 	Next() bool
 
-	// Value returns the current element's value.
-	// Does not modify the state of the iterator.
-	Value() interface{}
-
 	// Index returns the current element's index.
 	// Does not modify the state of the iterator.
 	Index() int
@@ -37,10 +33,6 @@ type IteratorWithKey interface {
 	// If Next() was called for the first time, then it will point the iterator to the first element if it exists.
 	// Modifies the state of the iterator.
 	Next() bool
-
-	// Value returns the current element's value.
-	// Does not modify the state of the iterator.
-	Value() interface{}
 
 	// Key returns the current element's key.
 	// Does not modify the state of the iterator.
@@ -99,6 +91,8 @@ type ReverseIteratorWithKey interface {
 	// End moves the iterator past the last element (one-past-the-end).
 	// Call Prev() to fetch the last element if any.
 	End()
+
+	Count() int
 
 	// Last moves the iterator to the last element and returns true if there was a last element in the container.
 	// If Last() returns true, then last element's key and value can be retrieved by Key() and Value().

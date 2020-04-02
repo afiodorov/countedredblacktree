@@ -113,16 +113,14 @@ between:
 	return true
 }
 
-// Value returns the current element's value.
-// Does not modify the state of the iterator.
-func (iterator *Iterator) Value() interface{} {
-	return iterator.node.Value
-}
-
 // Key returns the current element's key.
 // Does not modify the state of the iterator.
 func (iterator *Iterator) Key() interface{} {
 	return iterator.node.Key
+}
+
+func (iterator *Iterator) Count() int {
+	return iterator.node.NumRepeated + 1
 }
 
 // Begin resets the iterator to its initial state (one-before-first)

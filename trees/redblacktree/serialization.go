@@ -17,22 +17,25 @@ func assertSerializationImplementation() {
 
 // ToJSON outputs the JSON representation of the tree.
 func (tree *Tree) ToJSON() ([]byte, error) {
-	elements := make(map[string]interface{})
+	elements := make(map[string]int)
 	it := tree.Iterator()
 	for it.Next() {
-		elements[utils.ToString(it.Key())] = it.Value()
+		elements[utils.ToString(it.Key())] = it.node.NumRepeated
 	}
 	return json.Marshal(&elements)
 }
 
 // FromJSON populates the tree from the input JSON representation.
 func (tree *Tree) FromJSON(data []byte) error {
-	elements := make(map[string]interface{})
+	elements := make(map[string]int)
 	err := json.Unmarshal(data, &elements)
 	if err == nil {
 		tree.Clear()
 		for key, value := range elements {
-			tree.Put(key, value)
+			tree.Put(key)
+			for i := 0; i < value; i++ {
+				tree.Put(key)
+			}
 		}
 	}
 	return err

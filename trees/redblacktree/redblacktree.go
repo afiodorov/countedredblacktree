@@ -30,18 +30,66 @@ const (
 // Tree holds elements of the red-black tree
 type Tree struct {
 	Root       *Node
-	size       int
 	Comparator utils.Comparator
 }
 
 // Node is a single element within the tree
 type Node struct {
-	Key    interface{}
-	Value  interface{}
-	color  color
-	Left   *Node
-	Right  *Node
-	Parent *Node
+	Key         interface{}
+	color       color
+	Left        *Node
+	Right       *Node
+	Parent      *Node
+	NumChildren int
+	NumRepeated int
+}
+
+// setParent sets parent
+func (n *Node) setParent(p *Node) {
+	n.Parent = p
+	n.updateParentCounts()
+}
+
+// setRight sets right node
+func (n *Node) setRight(r *Node) {
+	if n.Right != nil {
+		n.NumChildren -= (n.Right.NumChildren + n.Right.NumRepeated + 1)
+	}
+	if r != nil {
+		n.NumChildren += (r.NumChildren + r.NumRepeated + 1)
+	}
+	n.Right = r
+	n.updateParentCounts()
+}
+
+// setLeft sets left node
+func (n *Node) setLeft(l *Node) {
+	if n.Left != nil {
+		n.NumChildren -= (n.Left.NumChildren + n.Left.NumRepeated + 1)
+	}
+	if l != nil {
+		n.NumChildren += (l.NumChildren + l.NumRepeated + 1)
+	}
+	n.Left = l
+	n.updateParentCounts()
+}
+
+func (n *Node) updateParentCounts() {
+	if n == nil {
+		return
+	}
+	p := n.Parent
+	for p != nil {
+		var numR, numL int
+		if p.Right != nil {
+			numR = p.Right.NumChildren + p.Right.NumRepeated + 1
+		}
+		if p.Left != nil {
+			numL = p.Left.NumChildren + p.Left.NumRepeated + 1
+		}
+		p.NumChildren = numR + numL
+		p = p.Parent
+	}
 }
 
 // NewWith instantiates a red-black tree with the custom comparator.
@@ -61,12 +109,12 @@ func NewWithStringComparator() *Tree {
 
 // Put inserts node into the tree.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (tree *Tree) Put(key interface{}, value interface{}) {
+func (tree *Tree) Put(key interface{}) {
 	var insertedNode *Node
 	if tree.Root == nil {
 		// Assert key is of comparator's type for initial tree
 		tree.Comparator(key, key)
-		tree.Root = &Node{Key: key, Value: value, color: red}
+		tree.Root = &Node{Key: key, color: red}
 		insertedNode = tree.Root
 	} else {
 		node := tree.Root
@@ -75,12 +123,12 @@ func (tree *Tree) Put(key interface{}, value interface{}) {
 			compare := tree.Comparator(key, node.Key)
 			switch {
 			case compare == 0:
-				node.Key = key
-				node.Value = value
+				node.NumRepeated++
+				node.updateParentCounts()
 				return
 			case compare < 0:
 				if node.Left == nil {
-					node.Left = &Node{Key: key, Value: value, color: red}
+					node.setLeft(&Node{Key: key, color: red})
 					insertedNode = node.Left
 					loop = false
 				} else {
@@ -88,7 +136,7 @@ func (tree *Tree) Put(key interface{}, value interface{}) {
 				}
 			case compare > 0:
 				if node.Right == nil {
-					node.Right = &Node{Key: key, Value: value, color: red}
+					node.setRight(&Node{Key: key, color: red})
 					insertedNode = node.Right
 					loop = false
 				} else {
@@ -96,21 +144,20 @@ func (tree *Tree) Put(key interface{}, value interface{}) {
 				}
 			}
 		}
-		insertedNode.Parent = node
+		insertedNode.setParent(node)
 	}
 	tree.insertCase1(insertedNode)
-	tree.size++
 }
 
 // Get searches the node in the tree by key and returns its value or nil if key is not found in tree.
 // Second return parameter is true if key was found, otherwise false.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (tree *Tree) Get(key interface{}) (value interface{}, found bool) {
+func (tree *Tree) Get(key interface{}) bool {
 	node := tree.lookup(key)
 	if node != nil {
-		return node.Value, true
+		return true
 	}
-	return nil, false
+	return false
 }
 
 // Remove remove the node from the tree by key.
@@ -121,10 +168,14 @@ func (tree *Tree) Remove(key interface{}) {
 	if node == nil {
 		return
 	}
+	if node.NumRepeated > 0 {
+		node.NumRepeated--
+		node.updateParentCounts()
+		return
+	}
 	if node.Left != nil && node.Right != nil {
 		pred := node.Left.maximumNode()
 		node.Key = pred.Key
-		node.Value = pred.Value
 		node = pred
 	}
 	if node.Left == nil || node.Right == nil {
@@ -142,37 +193,31 @@ func (tree *Tree) Remove(key interface{}) {
 			child.color = black
 		}
 	}
-	tree.size--
 }
 
 // Empty returns true if tree does not contain any nodes
 func (tree *Tree) Empty() bool {
-	return tree.size == 0
+	return tree.Size() == 0
 }
 
 // Size returns number of nodes in the tree.
 func (tree *Tree) Size() int {
-	return tree.size
+	if tree.Root != nil {
+		return tree.Root.NumChildren + tree.Root.NumRepeated + 1
+	}
+	return 0
 }
 
 // Keys returns all keys in-order
 func (tree *Tree) Keys() []interface{} {
-	keys := make([]interface{}, tree.size)
+	keys := make([]interface{}, 0, tree.Size())
 	it := tree.Iterator()
 	for i := 0; it.Next(); i++ {
-		keys[i] = it.Key()
+		for j := 0; j < it.Count(); j++ {
+			keys = append(keys, it.Key())
+		}
 	}
 	return keys
-}
-
-// Values returns all values in-order based on the key.
-func (tree *Tree) Values() []interface{} {
-	values := make([]interface{}, tree.size)
-	it := tree.Iterator()
-	for i := 0; it.Next(); i++ {
-		values[i] = it.Value()
-	}
-	return values
 }
 
 // Left returns the left-most (min) node or nil if tree is empty.
@@ -258,7 +303,6 @@ func (tree *Tree) Ceiling(key interface{}) (ceiling *Node, found bool) {
 // Clear removes all nodes from the tree.
 func (tree *Tree) Clear() {
 	tree.Root = nil
-	tree.size = 0
 }
 
 // String returns a string representation of container
@@ -345,23 +389,23 @@ func (node *Node) sibling() *Node {
 func (tree *Tree) rotateLeft(node *Node) {
 	right := node.Right
 	tree.replaceNode(node, right)
-	node.Right = right.Left
+	node.setRight(right.Left)
 	if right.Left != nil {
-		right.Left.Parent = node
+		right.Left.setParent(node)
 	}
-	right.Left = node
-	node.Parent = right
+	right.setLeft(node)
+	node.setParent(right)
 }
 
 func (tree *Tree) rotateRight(node *Node) {
 	left := node.Left
 	tree.replaceNode(node, left)
-	node.Left = left.Right
+	node.setLeft(left.Right)
 	if left.Right != nil {
-		left.Right.Parent = node
+		left.Right.setParent(node)
 	}
-	left.Right = node
-	node.Parent = left
+	left.setRight(node)
+	node.setParent(left)
 }
 
 func (tree *Tree) replaceNode(old *Node, new *Node) {
@@ -369,13 +413,13 @@ func (tree *Tree) replaceNode(old *Node, new *Node) {
 		tree.Root = new
 	} else {
 		if old == old.Parent.Left {
-			old.Parent.Left = new
+			old.Parent.setLeft(new)
 		} else {
-			old.Parent.Right = new
+			old.Parent.setRight(new)
 		}
 	}
 	if new != nil {
-		new.Parent = old.Parent
+		new.setParent(old.Parent)
 	}
 }
 
