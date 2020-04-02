@@ -102,6 +102,11 @@ func NewWithIntComparator() *Tree {
 	return &Tree{Comparator: utils.IntComparator}
 }
 
+// NewWithIntComparator instantiates a red-black tree with the IntComparator, i.e. keys are of type int.
+func NewWithFloat64Comparator() *Tree {
+	return &Tree{Comparator: utils.Float64Comparator}
+}
+
 // NewWithStringComparator instantiates a red-black tree with the StringComparator, i.e. keys are of type string.
 func NewWithStringComparator() *Tree {
 	return &Tree{Comparator: utils.StringComparator}
