@@ -58,7 +58,7 @@ func TestRedBlackTreeRemove(t *testing.T) {
 	tree.Put(4)
 	tree.Put(1)
 	tree.Put(2)
-	tree.Put(1) //overwrite
+	tree.Put(1)
 
 	tree.Remove(5)
 	tree.Remove(6)
