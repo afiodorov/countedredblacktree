@@ -87,7 +87,11 @@ func (n *Node) updateParentCounts() {
 		if p.Left != nil {
 			numL = p.Left.NumChildren + p.Left.NumRepeated + 1
 		}
-		p.NumChildren = numR + numL
+		newCount := numR + numL
+		if p.NumChildren == newCount {
+			return
+		}
+		p.NumChildren = newCount
 		p = p.Parent
 	}
 }
@@ -102,7 +106,7 @@ func NewWithIntComparator() *Tree {
 	return &Tree{Comparator: utils.IntComparator}
 }
 
-// NewWithIntComparator instantiates a red-black tree with the IntComparator, i.e. keys are of type int.
+// NewWithIntComparator instantiates a red-black tree with the Float64Comparator, i.e. keys are of type float64.
 func NewWithFloat64Comparator() *Tree {
 	return &Tree{Comparator: utils.Float64Comparator}
 }
