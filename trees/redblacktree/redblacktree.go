@@ -182,6 +182,7 @@ func (tree *Tree) Remove(key interface{}) {
 		pred := node.Left.maximumNode()
 		node.Key = pred.Key
 		node.NumRepeated = pred.NumRepeated
+		node.updateParentCounts()
 		node = pred
 	}
 	if node.Left == nil || node.Right == nil {
