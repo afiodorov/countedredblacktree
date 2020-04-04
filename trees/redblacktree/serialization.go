@@ -20,7 +20,7 @@ func (tree *Tree) ToJSON() ([]byte, error) {
 	elements := make(map[string]int)
 	it := tree.Iterator()
 	for it.Next() {
-		elements[utils.ToString(it.Key())] = it.node.NumRepeated
+		elements[utils.ToString(it.Key())] = it.Count()
 	}
 	return json.Marshal(&elements)
 }
@@ -32,7 +32,6 @@ func (tree *Tree) FromJSON(data []byte) error {
 	if err == nil {
 		tree.Clear()
 		for key, value := range elements {
-			tree.Put(key)
 			for i := 0; i < value; i++ {
 				tree.Put(key)
 			}
