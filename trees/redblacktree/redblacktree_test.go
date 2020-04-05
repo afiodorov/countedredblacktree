@@ -6,6 +6,7 @@ package redblacktree
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
@@ -532,6 +533,73 @@ func TestRedBlackTreeSerialization(t *testing.T) {
 
 	err = tree.FromJSON(json)
 	assert()
+}
+
+func TestRedBlackTreeCounts(t *testing.T) {
+	countGreaterOrEqual := func(a int, array []int) (ret int) {
+		for _, b := range array {
+			if b >= a {
+				ret++
+			}
+		}
+		return
+	}
+
+	countGreater := func(a int, array []int) (ret int) {
+		for _, b := range array {
+			if b > a {
+				ret++
+			}
+		}
+		return
+	}
+
+	countSmallerOrEqual := func(a int, array []int) (ret int) {
+		for _, b := range array {
+			if b <= a {
+				ret++
+			}
+		}
+		return
+	}
+
+	countSmaller := func(a int, array []int) (ret int) {
+		for _, b := range array {
+			if b < a {
+				ret++
+			}
+		}
+		return
+	}
+
+	r := rand.New(rand.NewSource(17))
+	nTests := 20
+	arrSize := 10
+	upperBound := 30
+
+	for i := 0; i < nTests; i++ {
+		tree := NewWithIntComparator()
+		array := make([]int, arrSize)
+		for j := 0; j < len(array); j++ {
+			array[j] = r.Intn(upperBound)
+			tree.Put(array[j])
+		}
+
+		for _, e := range array {
+			if expected, actual := countGreaterOrEqual(e, array), tree.CountGreaterOrEqual(e); expected != actual {
+				t.Errorf("GreaterOrEqual: Got %v expected %v", actual, expected)
+			}
+			if expected, actual := countGreater(e, array), tree.CountGreater(e); expected != actual {
+				t.Errorf("Greater: Got %v expected %v", actual, expected)
+			}
+			if expected, actual := countSmallerOrEqual(e, array), tree.CountSmallerOrEqual(e); expected != actual {
+				t.Errorf("SmallerOrEqual: Got %v expected %v", actual, expected)
+			}
+			if expected, actual := countSmaller(e, array), tree.CountSmaller(e); expected != actual {
+				t.Errorf("Smaller: Got %v expected %v", actual, expected)
+			}
+		}
+	}
 }
 
 func benchmarkGet(b *testing.B, tree *Tree, size int) {

@@ -318,6 +318,136 @@ func (tree *Tree) Clear() {
 	tree.Root = nil
 }
 
+// CountGreaterOrEqual returns number of nodes that are >= than supplied key
+func (tree *Tree) CountGreaterOrEqual(key interface{}) (ret int) {
+	var ceiling *Node
+	node := tree.Root
+ceil:
+	for node != nil {
+		compare := tree.Comparator(key, node.Key)
+		switch {
+		case compare == 0:
+			ceiling = node
+			ret += ceiling.NumRepeated + 1
+			if ceiling.Right != nil {
+				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
+			}
+			break ceil
+		case compare < 0:
+			ceiling = node
+			ret += ceiling.NumRepeated + 1
+			if ceiling.Right != nil {
+				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
+			}
+			node = node.Left
+		case compare > 0:
+			node = node.Right
+		}
+	}
+	if ceiling == nil {
+		ret = tree.Size() // no ceiling => tree empty or all nodes are smaller than key
+		return
+	}
+	return
+}
+
+// CountGreater returns number of nodes that are > than supplied key
+func (tree *Tree) CountGreater(key interface{}) (ret int) {
+	var ceiling *Node
+	node := tree.Root
+ceil:
+	for node != nil {
+		compare := tree.Comparator(key, node.Key)
+		switch {
+		case compare == 0:
+			ceiling = node
+			if ceiling.Right != nil {
+				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
+			}
+			break ceil
+		case compare < 0:
+			ceiling = node
+			ret += ceiling.NumRepeated + 1
+			if ceiling.Right != nil {
+				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
+			}
+			node = node.Left
+		case compare > 0:
+			node = node.Right
+		}
+	}
+	if ceiling == nil {
+		ret = tree.Size() // no ceiling => tree empty or all nodes are smaller than key
+		return
+	}
+	return
+}
+
+// CountSmallerOrEqual returns number of nodes that are <= than supplied key
+func (tree *Tree) CountSmallerOrEqual(key interface{}) (ret int) {
+	var floor *Node
+	node := tree.Root
+floor:
+	for node != nil {
+		compare := tree.Comparator(key, node.Key)
+		switch {
+		case compare == 0:
+			floor = node
+			ret += floor.NumRepeated + 1
+			if floor.Left != nil {
+				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
+			}
+			break floor
+		case compare < 0:
+			node = node.Left
+		case compare > 0:
+			floor = node
+			ret += floor.NumRepeated + 1
+			if floor.Left != nil {
+				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
+			}
+			node = node.Right
+		}
+	}
+	if floor == nil {
+		ret = tree.Size() // no floor => tree empty or all nodes are bigger than key
+		return
+	}
+	return
+}
+
+// CountSmaller returns number of nodes that are < than supplied key
+func (tree *Tree) CountSmaller(key interface{}) (ret int) {
+	var floor *Node
+	node := tree.Root
+floor:
+	for node != nil {
+		compare := tree.Comparator(key, node.Key)
+		switch {
+		case compare == 0:
+			floor = node
+			if floor.Left != nil {
+				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
+			}
+			break floor
+		case compare < 0:
+			node = node.Left
+		case compare > 0:
+			floor = node
+			ret += floor.NumRepeated + 1
+			if floor.Left != nil {
+				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
+			}
+			node = node.Right
+		}
+	}
+	if floor == nil {
+		ret = tree.Size() // no floor => tree empty or all nodes are bigger than key
+		return
+	}
+	return
+}
+
 // String returns a string representation of container
 func (tree *Tree) String() string {
 	str := "RedBlackTree\n"
