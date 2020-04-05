@@ -574,16 +574,25 @@ func TestRedBlackTreeCounts(t *testing.T) {
 
 	r := rand.New(rand.NewSource(17))
 	nTests := 20
-	arrSize := 10
+	arrSize := 100
 	upperBound := 30
 
 	for i := 0; i < nTests; i++ {
+		var randVal int
+		for randVal != 5 {
+			// skip 5
+			randVal = r.Intn(upperBound)
+		}
 		tree := NewWithIntComparator()
 		array := make([]int, arrSize)
 		for j := 0; j < len(array); j++ {
-			array[j] = r.Intn(upperBound)
-			tree.Put(array[j])
+			array[j] = randVal
+			tree.Put(randVal)
 		}
+
+		testVals := make([]int, len(array))
+		copy(testVals, array)
+		testVals = append(testVals, -10, upperBound+10, 5)
 
 		for _, e := range array {
 			if expected, actual := countGreaterOrEqual(e, array), tree.CountGreaterOrEqual(e); expected != actual {
