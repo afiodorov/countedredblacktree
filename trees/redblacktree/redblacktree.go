@@ -345,8 +345,7 @@ ceil:
 		}
 	}
 	if ceiling == nil {
-		ret = tree.Size() // no ceiling => tree empty or all nodes are smaller than key
-		return
+		return // no ceiling => tree empty or all nodes are smaller than key
 	}
 	return
 }
@@ -377,8 +376,7 @@ ceil:
 		}
 	}
 	if ceiling == nil {
-		ret = tree.Size() // no ceiling => tree empty or all nodes are smaller than key
-		return
+		return // no ceiling => tree empty or all nodes are smaller than key
 	}
 	return
 }
@@ -410,8 +408,7 @@ floor:
 		}
 	}
 	if floor == nil {
-		ret = tree.Size() // no floor => tree empty or all nodes are bigger than key
-		return
+		return // no floor => tree empty or all nodes are bigger than key
 	}
 	return
 }
@@ -442,8 +439,7 @@ floor:
 		}
 	}
 	if floor == nil {
-		ret = tree.Size() // no floor => tree empty or all nodes are bigger than key
-		return
+		return // no floor => tree empty or all nodes are bigger than key
 	}
 	return
 }

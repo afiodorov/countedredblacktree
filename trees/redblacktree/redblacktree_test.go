@@ -611,6 +611,36 @@ func TestRedBlackTreeCounts(t *testing.T) {
 	}
 }
 
+func TestRedBlackTreeNoFloor(t *testing.T) {
+	tree := NewWithFloat64Comparator()
+	tree.Put(10.0)
+	tree.Put(20.0)
+	tree.Put(30.0)
+
+	if expected, actual := tree.CountSmallerOrEqual(5.0), 0; expected != actual {
+		t.Errorf("SmallerOrEqual: Got %v expected %v", actual, expected)
+	}
+
+	if expected, actual := tree.CountSmaller(5.0), 0; expected != actual {
+		t.Errorf("Smaller: Got %v expected %v", actual, expected)
+	}
+}
+
+func TestRedBlackTreeNoCeiling(t *testing.T) {
+	tree := NewWithFloat64Comparator()
+	tree.Put(1.0)
+	tree.Put(2.0)
+	tree.Put(3.0)
+
+	if expected, actual := tree.CountGreaterOrEqual(5.0), 0; expected != actual {
+		t.Errorf("GreaterOrEqual: Got %v expected %v", actual, expected)
+	}
+
+	if expected, actual := tree.CountGreater(5.0), 0; expected != actual {
+		t.Errorf("Greater: Got %v expected %v", actual, expected)
+	}
+}
+
 func benchmarkGet(b *testing.B, tree *Tree, size int) {
 	for i := 0; i < b.N; i++ {
 		for n := 0; n < size; n++ {
