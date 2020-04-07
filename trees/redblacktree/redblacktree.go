@@ -74,6 +74,13 @@ func (n *Node) setLeft(l *Node) {
 	n.updateParentCounts()
 }
 
+// copy copies from node
+func (n *Node) copy(c *Node) {
+	n.Key = c.Key
+	n.NumRepeated = c.NumRepeated
+	n.updateParentCounts()
+}
+
 func (n *Node) updateParentCounts() {
 	if n == nil {
 		return
@@ -185,9 +192,7 @@ func (tree *Tree) Remove(key interface{}) bool {
 	}
 	if node.Left != nil && node.Right != nil {
 		pred := node.Left.maximumNode()
-		node.Key = pred.Key
-		node.NumRepeated = pred.NumRepeated
-		node.updateParentCounts()
+		node.copy(pred)
 		node = pred
 	}
 	if node.Left == nil || node.Right == nil {
