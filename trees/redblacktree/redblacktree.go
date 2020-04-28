@@ -13,6 +13,7 @@ package redblacktree
 
 import (
 	"fmt"
+
 	"github.com/afiodorov/countedredblacktree/trees"
 	"github.com/afiodorov/countedredblacktree/utils"
 )
@@ -30,6 +31,7 @@ const (
 // Tree holds elements of the red-black tree
 type Tree struct {
 	Root       *Node
+	size       int
 	Comparator utils.Comparator
 }
 
@@ -40,67 +42,28 @@ type Node struct {
 	Left        *Node
 	Right       *Node
 	Parent      *Node
-	NumChildren int
 	NumRepeated int
 }
 
 // setParent sets parent
 func (n *Node) setParent(p *Node) {
 	n.Parent = p
-	n.updateParentCounts()
 }
 
 // setRight sets right node
 func (n *Node) setRight(r *Node) {
-	if n.Right != nil {
-		n.NumChildren -= (n.Right.NumChildren + n.Right.NumRepeated + 1)
-	}
-	if r != nil {
-		n.NumChildren += (r.NumChildren + r.NumRepeated + 1)
-	}
 	n.Right = r
-	n.updateParentCounts()
 }
 
 // setLeft sets left node
 func (n *Node) setLeft(l *Node) {
-	if n.Left != nil {
-		n.NumChildren -= (n.Left.NumChildren + n.Left.NumRepeated + 1)
-	}
-	if l != nil {
-		n.NumChildren += (l.NumChildren + l.NumRepeated + 1)
-	}
 	n.Left = l
-	n.updateParentCounts()
 }
 
 // copy copies from node
 func (n *Node) copy(c *Node) {
 	n.Key = c.Key
 	n.NumRepeated = c.NumRepeated
-	n.updateParentCounts()
-}
-
-func (n *Node) updateParentCounts() {
-	if n == nil {
-		return
-	}
-	p := n.Parent
-	for p != nil {
-		var numR, numL int
-		if p.Right != nil {
-			numR = p.Right.NumChildren + p.Right.NumRepeated + 1
-		}
-		if p.Left != nil {
-			numL = p.Left.NumChildren + p.Left.NumRepeated + 1
-		}
-		newCount := numR + numL
-		if p.NumChildren == newCount {
-			return
-		}
-		p.NumChildren = newCount
-		p = p.Parent
-	}
 }
 
 // NewWith instantiates a red-black tree with the custom comparator.
@@ -126,6 +89,7 @@ func NewWithStringComparator() *Tree {
 // Put inserts node into the tree.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
 func (tree *Tree) Put(key interface{}) {
+	tree.size++
 	var insertedNode *Node
 	if tree.Root == nil {
 		// Assert key is of comparator's type for initial tree
@@ -140,7 +104,6 @@ func (tree *Tree) Put(key interface{}) {
 			switch {
 			case compare == 0:
 				node.NumRepeated++
-				node.updateParentCounts()
 				return
 			case compare < 0:
 				if node.Left == nil {
@@ -187,7 +150,7 @@ func (tree *Tree) Remove(key interface{}) bool {
 	}
 	if node.NumRepeated > 0 {
 		node.NumRepeated--
-		node.updateParentCounts()
+		tree.size--
 		return true
 	}
 	if node.Left != nil && node.Right != nil {
@@ -210,6 +173,7 @@ func (tree *Tree) Remove(key interface{}) bool {
 			child.color = black
 		}
 	}
+	tree.size--
 	return true
 }
 
@@ -221,7 +185,7 @@ func (tree *Tree) Empty() bool {
 // Size returns number of nodes in the tree.
 func (tree *Tree) Size() int {
 	if tree.Root != nil {
-		return tree.Root.NumChildren + tree.Root.NumRepeated + 1
+		return tree.size
 	}
 	return 0
 }
@@ -321,132 +285,6 @@ func (tree *Tree) Ceiling(key interface{}) (ceiling *Node, found bool) {
 // Clear removes all nodes from the tree.
 func (tree *Tree) Clear() {
 	tree.Root = nil
-}
-
-// CountGreaterOrEqual returns number of nodes that are >= than supplied key
-func (tree *Tree) CountGreaterOrEqual(key interface{}) (ret int) {
-	var ceiling *Node
-	node := tree.Root
-ceil:
-	for node != nil {
-		compare := tree.Comparator(key, node.Key)
-		switch {
-		case compare == 0:
-			ceiling = node
-			ret += ceiling.NumRepeated + 1
-			if ceiling.Right != nil {
-				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
-			}
-			break ceil
-		case compare < 0:
-			ceiling = node
-			ret += ceiling.NumRepeated + 1
-			if ceiling.Right != nil {
-				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
-			}
-			node = node.Left
-		case compare > 0:
-			node = node.Right
-		}
-	}
-	if ceiling == nil {
-		return // no ceiling => tree empty or all nodes are smaller than key
-	}
-	return
-}
-
-// CountGreater returns number of nodes that are > than supplied key
-func (tree *Tree) CountGreater(key interface{}) (ret int) {
-	var ceiling *Node
-	node := tree.Root
-ceil:
-	for node != nil {
-		compare := tree.Comparator(key, node.Key)
-		switch {
-		case compare == 0:
-			ceiling = node
-			if ceiling.Right != nil {
-				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
-			}
-			break ceil
-		case compare < 0:
-			ceiling = node
-			ret += ceiling.NumRepeated + 1
-			if ceiling.Right != nil {
-				ret += ceiling.Right.NumChildren + ceiling.Right.NumRepeated + 1
-			}
-			node = node.Left
-		case compare > 0:
-			node = node.Right
-		}
-	}
-	if ceiling == nil {
-		return // no ceiling => tree empty or all nodes are smaller than key
-	}
-	return
-}
-
-// CountSmallerOrEqual returns number of nodes that are <= than supplied key
-func (tree *Tree) CountSmallerOrEqual(key interface{}) (ret int) {
-	var floor *Node
-	node := tree.Root
-floor:
-	for node != nil {
-		compare := tree.Comparator(key, node.Key)
-		switch {
-		case compare == 0:
-			floor = node
-			ret += floor.NumRepeated + 1
-			if floor.Left != nil {
-				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
-			}
-			break floor
-		case compare < 0:
-			node = node.Left
-		case compare > 0:
-			floor = node
-			ret += floor.NumRepeated + 1
-			if floor.Left != nil {
-				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
-			}
-			node = node.Right
-		}
-	}
-	if floor == nil {
-		return // no floor => tree empty or all nodes are bigger than key
-	}
-	return
-}
-
-// CountSmaller returns number of nodes that are < than supplied key
-func (tree *Tree) CountSmaller(key interface{}) (ret int) {
-	var floor *Node
-	node := tree.Root
-floor:
-	for node != nil {
-		compare := tree.Comparator(key, node.Key)
-		switch {
-		case compare == 0:
-			floor = node
-			if floor.Left != nil {
-				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
-			}
-			break floor
-		case compare < 0:
-			node = node.Left
-		case compare > 0:
-			floor = node
-			ret += floor.NumRepeated + 1
-			if floor.Left != nil {
-				ret += floor.Left.NumChildren + floor.Left.NumRepeated + 1
-			}
-			node = node.Right
-		}
-	}
-	if floor == nil {
-		return // no floor => tree empty or all nodes are bigger than key
-	}
-	return
 }
 
 // String returns a string representation of container
