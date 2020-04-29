@@ -36,7 +36,7 @@ type Tree struct {
 
 // Node is a single element within the tree
 type Node struct {
-	Key         interface{}
+	Key         float64
 	color       color
 	Left        *Node
 	Right       *Node
@@ -53,8 +53,12 @@ func (t *Tree) NumGreater(n *Node) (ret int) {
 			ret += currNode.Right.NumChildren + currNode.Right.NumRepeated + 1
 		}
 		firstParentGreater := currNode.Parent
-		for firstParentGreater != nil && t.Comparator(firstParentGreater.Key, currNode.Key) <= 0 {
-			firstParentGreater = firstParentGreater.Parent
+		if firstParentGreater != nil && firstParentGreater.Left == currNode {
+			currNode = firstParentGreater
+		} else {
+			for firstParentGreater != nil && t.Comparator(firstParentGreater.Key, currNode.Key) <= 0 {
+				firstParentGreater = firstParentGreater.Parent
+			}
 		}
 		if firstParentGreater != nil {
 			ret += firstParentGreater.NumRepeated + 1
@@ -128,24 +132,14 @@ func NewWith(comparator utils.Comparator) *Tree {
 	return &Tree{Comparator: comparator}
 }
 
-// NewWithIntComparator instantiates a red-black tree with the IntComparator, i.e. keys are of type int.
-func NewWithIntComparator() *Tree {
-	return &Tree{Comparator: utils.IntComparator}
-}
-
 // NewWithIntComparator instantiates a red-black tree with the Float64Comparator, i.e. keys are of type float64.
 func NewWithFloat64Comparator() *Tree {
 	return &Tree{Comparator: utils.Float64Comparator}
 }
 
-// NewWithStringComparator instantiates a red-black tree with the StringComparator, i.e. keys are of type string.
-func NewWithStringComparator() *Tree {
-	return &Tree{Comparator: utils.StringComparator}
-}
-
 // Put inserts node into the tree.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (tree *Tree) Put(key interface{}) {
+func (tree *Tree) Put(key float64) {
 	var insertedNode *Node
 	if tree.Root == nil {
 		// Assert key is of comparator's type for initial tree
@@ -188,7 +182,7 @@ func (tree *Tree) Put(key interface{}) {
 // Get searches the node in the tree by key and returns its value or nil if key is not found in tree.
 // Second return parameter is true if key was found, otherwise false.
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (tree *Tree) Get(key interface{}) bool {
+func (tree *Tree) Get(key float64) bool {
 	node := tree.lookup(key)
 	if node != nil {
 		return true
@@ -199,7 +193,7 @@ func (tree *Tree) Get(key interface{}) bool {
 // Remove remove the node from the tree by key.
 // Returns false if nothing was removed
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (tree *Tree) Remove(key interface{}) bool {
+func (tree *Tree) Remove(key float64) bool {
 	var child *Node
 	node := tree.lookup(key)
 	if node == nil {
@@ -288,7 +282,7 @@ func (tree *Tree) Right() *Node {
 // all nodes in the tree are larger than the given node.
 //
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (tree *Tree) Floor(key interface{}) (floor *Node, found bool) {
+func (tree *Tree) Floor(key float64) (floor *Node, found bool) {
 	found = false
 	node := tree.Root
 	for node != nil {
@@ -317,7 +311,7 @@ func (tree *Tree) Floor(key interface{}) (floor *Node, found bool) {
 // all nodes in the tree are smaller than the given node.
 //
 // Key should adhere to the comparator's type assertion, otherwise method panics.
-func (tree *Tree) Ceiling(key interface{}) (ceiling *Node, found bool) {
+func (tree *Tree) Ceiling(key float64) (ceiling *Node, found bool) {
 	found = false
 	node := tree.Root
 	for node != nil {
@@ -344,7 +338,7 @@ func (tree *Tree) Clear() {
 }
 
 // CountGreaterOrEqual returns number of nodes that are >= than supplied key
-func (tree *Tree) CountGreaterOrEqual(key interface{}) (ret int) {
+func (tree *Tree) CountGreaterOrEqual(key float64) (ret int) {
 	var ceiling *Node
 	node := tree.Root
 ceil:
@@ -376,7 +370,7 @@ ceil:
 }
 
 // CountGreater returns number of nodes that are > than supplied key
-func (tree *Tree) CountGreater(key interface{}) (ret int) {
+func (tree *Tree) CountGreater(key float64) (ret int) {
 	var ceiling *Node
 	node := tree.Root
 ceil:
@@ -407,7 +401,7 @@ ceil:
 }
 
 // CountSmallerOrEqual returns number of nodes that are <= than supplied key
-func (tree *Tree) CountSmallerOrEqual(key interface{}) (ret int) {
+func (tree *Tree) CountSmallerOrEqual(key float64) (ret int) {
 	var floor *Node
 	node := tree.Root
 floor:
@@ -439,7 +433,7 @@ floor:
 }
 
 // CountSmaller returns number of nodes that are < than supplied key
-func (tree *Tree) CountSmaller(key interface{}) (ret int) {
+func (tree *Tree) CountSmaller(key float64) (ret int) {
 	var floor *Node
 	node := tree.Root
 floor:
@@ -510,7 +504,7 @@ func output(node *Node, prefix string, isTail bool, str *string) {
 	}
 }
 
-func (tree *Tree) lookup(key interface{}) *Node {
+func (tree *Tree) lookup(key float64) *Node {
 	node := tree.Root
 	for node != nil {
 		compare := tree.Comparator(key, node.Key)

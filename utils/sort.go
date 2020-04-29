@@ -25,5 +25,5 @@ func (s sortable) Swap(i, j int) {
 	s.values[i], s.values[j] = s.values[j], s.values[i]
 }
 func (s sortable) Less(i, j int) bool {
-	return s.comparator(s.values[i], s.values[j]) < 0
+	return s.comparator(s.values[i].(float64), s.values[j].(float64)) < 0
 }

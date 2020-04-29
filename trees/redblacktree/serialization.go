@@ -6,6 +6,7 @@ package redblacktree
 
 import (
 	"encoding/json"
+
 	"github.com/afiodorov/countedredblacktree/containers"
 	"github.com/afiodorov/countedredblacktree/utils"
 )
@@ -27,7 +28,7 @@ func (tree *Tree) ToJSON() ([]byte, error) {
 
 // FromJSON populates the tree from the input JSON representation.
 func (tree *Tree) FromJSON(data []byte) error {
-	elements := make(map[string]int)
+	elements := make(map[float64]int)
 	err := json.Unmarshal(data, &elements)
 	if err == nil {
 		tree.Clear()

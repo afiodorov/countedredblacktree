@@ -13,7 +13,7 @@ import "time"
 //    negative , if a < b
 //    zero     , if a == b
 //    positive , if a > b
-type Comparator func(a, b interface{}) int
+type Comparator func(a, b float64) int
 
 // StringComparator provides a fast comparison on strings
 func StringComparator(a, b interface{}) int {
@@ -194,13 +194,11 @@ func Float32Comparator(a, b interface{}) int {
 }
 
 // Float64Comparator provides a basic comparison on float64
-func Float64Comparator(a, b interface{}) int {
-	aAsserted := a.(float64)
-	bAsserted := b.(float64)
+func Float64Comparator(a, b float64) int {
 	switch {
-	case aAsserted > bAsserted:
+	case a > b:
 		return 1
-	case aAsserted < bAsserted:
+	case a < b:
 		return -1
 	default:
 		return 0
