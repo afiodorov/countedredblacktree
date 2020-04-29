@@ -119,6 +119,11 @@ func (iterator *Iterator) Key() interface{} {
 	return iterator.node.Key
 }
 
+// NumGreater returns number of nodes that are bigger than current node
+func (iterator *Iterator) NumGreater() int {
+	return iterator.tree.NumGreater(iterator.node)
+}
+
 func (iterator *Iterator) Count() int {
 	return iterator.node.NumRepeated + 1
 }

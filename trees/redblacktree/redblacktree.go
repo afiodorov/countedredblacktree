@@ -13,6 +13,7 @@ package redblacktree
 
 import (
 	"fmt"
+
 	"github.com/afiodorov/countedredblacktree/trees"
 	"github.com/afiodorov/countedredblacktree/utils"
 )
@@ -42,6 +43,25 @@ type Node struct {
 	Parent      *Node
 	NumChildren int
 	NumRepeated int
+}
+
+// NumGreater returns number of nodes in the tree that are > than the node
+func (t *Tree) NumGreater(n *Node) (ret int) {
+	currNode := n
+	for currNode != nil {
+		if currNode.Right != nil {
+			ret += currNode.Right.NumChildren + currNode.Right.NumRepeated + 1
+		}
+		firstParentGreater := currNode.Parent
+		for firstParentGreater != nil && t.Comparator(firstParentGreater.Key, currNode.Key) <= 0 {
+			firstParentGreater = firstParentGreater.Parent
+		}
+		if firstParentGreater != nil {
+			ret += firstParentGreater.NumRepeated + 1
+		}
+		currNode = firstParentGreater
+	}
+	return
 }
 
 // setParent sets parent

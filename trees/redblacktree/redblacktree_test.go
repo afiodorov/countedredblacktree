@@ -7,6 +7,7 @@ package redblacktree
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 	"testing"
 )
 
@@ -578,14 +579,14 @@ func TestRedBlackTreeCounts(t *testing.T) {
 	upperBound := 30
 
 	for i := 0; i < nTests; i++ {
-		var randVal int
-		for randVal != 5 {
-			// skip 5
-			randVal = r.Intn(upperBound)
-		}
 		tree := NewWithIntComparator()
 		array := make([]int, arrSize)
 		for j := 0; j < len(array); j++ {
+			randVal := r.Intn(upperBound)
+			for randVal == 5 {
+				// skip 5
+				randVal = r.Intn(upperBound)
+			}
 			array[j] = randVal
 			tree.Put(randVal)
 		}
@@ -606,6 +607,47 @@ func TestRedBlackTreeCounts(t *testing.T) {
 			}
 			if expected, actual := countSmaller(e, array), tree.CountSmaller(e); expected != actual {
 				t.Errorf("Smaller: Got %v expected %v", actual, expected)
+			}
+		}
+	}
+}
+
+func TestRedBlackTreeNumGreater(t *testing.T) {
+	countGreater := func(a int, array []int) (ret int) {
+		for _, b := range array {
+			if b > a {
+				ret++
+			}
+		}
+		return
+	}
+
+	r := rand.New(rand.NewSource(17))
+	nTests := 20
+	arrSize := 100
+	upperBound := 30
+
+	for i := 0; i < nTests; i++ {
+		tree := NewWithIntComparator()
+		array := make([]int, arrSize)
+		for j := 0; j < len(array); j++ {
+			randVal := r.Intn(upperBound)
+			array[j] = randVal
+			tree.Put(randVal)
+		}
+
+		sort.Ints(array)
+
+		it := tree.Iterator()
+		it.Begin()
+		for i := 0; it.Next(); {
+			for j := 0; j < it.Count(); i, j = i+1, j+1 {
+				if expected, actual := array[i], it.Key().(int); expected != actual {
+					t.Errorf("Iterator: Got %v expected %v", actual, expected)
+				}
+				if expected, actual := countGreater(array[i], array), it.NumGreater(); expected != actual {
+					t.Errorf("NumGreater: Got %v expected %v", actual, expected)
+				}
 			}
 		}
 	}
