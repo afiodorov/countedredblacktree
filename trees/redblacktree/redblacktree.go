@@ -30,6 +30,7 @@ const (
 
 // Tree holds elements of the red-black tree
 type Tree struct {
+	size       int
 	Root       *Node
 	Comparator utils.Comparator
 }
@@ -92,6 +93,7 @@ func (tree *Tree) Put(key float64) {
 			switch {
 			case compare == 0:
 				node.NumRepeated++
+				tree.size++
 				return
 			case compare < 0:
 				if node.Left == nil {
@@ -114,6 +116,7 @@ func (tree *Tree) Put(key float64) {
 		insertedNode.setParent(node)
 	}
 	tree.insertCase1(insertedNode)
+	tree.size++
 }
 
 // Get searches the node in the tree by key and returns its value or nil if key is not found in tree.
@@ -138,6 +141,7 @@ func (tree *Tree) Remove(key float64) bool {
 	}
 	if node.NumRepeated > 0 {
 		node.NumRepeated--
+		tree.size--
 		return true
 	}
 	if node.Left != nil && node.Right != nil {
@@ -160,6 +164,7 @@ func (tree *Tree) Remove(key float64) bool {
 			child.color = black
 		}
 	}
+	tree.size--
 	return true
 }
 
@@ -170,10 +175,7 @@ func (tree *Tree) Empty() bool {
 
 // Size returns number of nodes in the tree.
 func (tree *Tree) Size() int {
-	if tree.Root != nil {
-		return tree.Root.NumChildren + tree.Root.NumRepeated + 1
-	}
-	return 0
+	return tree.size
 }
 
 // Keys returns all keys in-order
